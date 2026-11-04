@@ -27,7 +27,7 @@
 
   $("#picks").innerHTML = FLAVORS.map(f => `
     <li class="pick" data-id="${f.id}">
-      <span class="pick__thumb" style="--c:${f.tint}"><img src="${Z.bag(f.id, 560)}" alt="" width="560" height="${Math.round(f.cutH * 560 / 960)}" loading="lazy"></span>
+      <span class="pick__thumb" style="--c:${f.tint}"><img src="${Z.bag(f.id, 560)}" alt="" width="560" height="${Math.round(f.cutH * 560 / 960)}"></span>
       <span style="min-width:0"><span class="pick__name">${f.name}</span><br><span class="pick__ing">${f.ing.join(", ")}</span></span>
       <span class="stepper">
         <button type="button" data-act="-" aria-label="Quitar una porción de ${f.name}">−</button>

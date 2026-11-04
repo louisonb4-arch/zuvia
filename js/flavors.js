@@ -32,7 +32,7 @@
         const sl = RIM[i], el = document.createElement("div");
         el.className = "piece piece--" + sl.L;
         el.style.cssText = `--s:${sl.s};--d:${sl.d};--r:${sl.r}deg;--dur:${5.5 + (i % 3) * 1.3}s;--delay:${-i * .8}s`;
-        el.innerHTML = `<img src="${Z.fruit(name)}" alt="" draggable="false">`;
+        el.innerHTML = `<img src="${Z.fruit(name)}" alt="" draggable="false" decoding="async">`;
         place(el, sl);
         (sl.L === "back" ? back : front).appendChild(el);
         return el;
@@ -76,14 +76,16 @@
   }
   function swapBag(img, id, size) {
     const f = byId[id];
-    const set = () => { img.src = Z.bag(id); img.srcset = `${Z.bag(id, 560)} 560w, ${Z.bag(id)} 960w`; img.width = 960; img.height = f.cutH; img.alt = `Bolsa Zuvia ${f.name}`; };
+    const set = () => { img.src = Z.bag(id); img.srcset = `${Z.bag(id, 560)} 460w, ${Z.bag(id)} 760w`; img.width = 960; img.height = f.cutH; img.alt = `Bolsa Zuvia ${f.name}`; };
     if (!anim()) { set(); return Promise.resolve(); }
     return G.to(img, { y: 40, rotation: -6, scale: .9, opacity: 0, duration: .3, ease: "power2.in" }).then(() => {
       set();
       G.fromTo(img, { y: -70, rotation: 6, scale: .94, opacity: 0 }, { y: 0, rotation: 0, scale: 1, opacity: 1, duration: .85, ease: "back.out(1.5)", clearProps: "transform,opacity" });
     });
   }
-  FLAVORS.forEach(f => { const i = new Image(); i.src = Z.bag(f.id); f.fruits.forEach(n => { const j = new Image(); j.src = Z.fruit(n); }); });
+  // warm the cache for the other flavors once the page is idle (not during first paint)
+  const warm = () => { const seen = new Set(); FLAVORS.forEach(f => [Z.bag(f.id), Z.glass(f.id), ...f.fruits.map(Z.fruit)].forEach(u => { if (seen.has(u)) return; seen.add(u); const i = new Image(); i.decoding = "async"; i.src = u; })); };
+  addEventListener("load", () => (window.requestIdleCallback || (cb => setTimeout(cb, 1200)))(warm));
 
   /* ---------- HERO ---------- */
   const hero = document.getElementById("hero");
@@ -215,7 +217,7 @@
     new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.disconnect();
       const run = () => { init(); layer.burst(.2); };
       if (bag.complete && bag.naturalWidth) run(); else bag.addEventListener("load", run, { once: true }); } }, { rootMargin: "200px" }).observe(sabor);
-    Z.sabor = { select(id) { const i = FLAVORS.findIndex(f => f.id === id); if (shown) go(i); else { index = i; const f = FLAVORS[i]; sabor.dataset.flavor = f.id; info(f); setWord(f, false); sabor.querySelector("#saborGlass").src = Z.glass(f.id); bag.src = Z.bag(f.id); bag.srcset = `${Z.bag(f.id, 560)} 560w, ${Z.bag(f.id)} 960w`; bag.height = f.cutH; } } };
+    Z.sabor = { select(id) { const i = FLAVORS.findIndex(f => f.id === id); if (shown) go(i); else { index = i; const f = FLAVORS[i]; sabor.dataset.flavor = f.id; info(f); setWord(f, false); sabor.querySelector("#saborGlass").src = Z.glass(f.id); bag.src = Z.bag(f.id); bag.srcset = `${Z.bag(f.id, 560)} 460w, ${Z.bag(f.id)} 760w`; bag.height = f.cutH; } } };
   }
 
   /* ---------- LA GAMA row ---------- */
@@ -224,8 +226,8 @@
     row.innerHTML = FLAVORS.map(f => `
       <li class="gama__item">
         <button type="button" class="gama__btn" data-id="${f.id}" aria-label="Ver ${f.name}">
-          <img class="gama__glass" src="${Z.glass(f.id)}" alt="" loading="lazy" draggable="false">
-          <img class="gama__img" src="${Z.bag(f.id, 560)}" alt="Bolsa Zuvia ${f.name}" width="560" height="${Math.round(f.cutH * 560 / 960)}" loading="lazy" draggable="false">
+          <img class="gama__glass" src="${Z.glass(f.id)}" alt="" draggable="false">
+          <img class="gama__img" src="${Z.bag(f.id, 560)}" alt="Bolsa Zuvia ${f.name}" width="560" height="${Math.round(f.cutH * 560 / 960)}" draggable="false">
           <span class="gama__shadow" aria-hidden="true"></span>
           <span class="pill" data-flavor="${f.id}">${f.name}</span>
         </button>
