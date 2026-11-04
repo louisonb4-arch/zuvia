@@ -68,11 +68,24 @@
       target.style.setProperty("--py", ((e.clientY - r.top) / r.height - .5).toFixed(3)); }); });
     el.addEventListener("pointerleave", () => { target.style.setProperty("--px", 0); target.style.setProperty("--py", 0); });
   }
+  // layout box of an element ignoring any in-flight transform (entry animations would skew placement)
+  function rest(el) {
+    const t = el.style.transform, o = el.style.translate; el.style.transform = "none";
+    const r = el.getBoundingClientRect(); el.style.transform = t; return r;
+  }
+  const ready = img => (img.decode ? img.decode().catch(() => {}) : Promise.resolve());
   function swipe(el, fn) {
     let sx = null, sy = null;
-    el.addEventListener("pointerdown", e => { sx = e.clientX; sy = e.clientY; });
-    el.addEventListener("pointerup", e => { if (sx === null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) fn(dx < 0 ? 1 : -1); });
+    const end = (x, y) => { if (sx === null) return; const dx = x - sx, dy = y - sy; sx = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) fn(dx < 0 ? 1 : -1); };
+    if ("ontouchstart" in window) {
+      el.addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; }, { passive: true });
+      el.addEventListener("touchend", e => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); }, { passive: true });
+      el.addEventListener("touchcancel", () => { sx = null; }, { passive: true });
+    } else {
+      el.addEventListener("pointerdown", e => { sx = e.clientX; sy = e.clientY; });
+      el.addEventListener("pointerup", e => end(e.clientX, e.clientY));
+    }
   }
   function swapBag(img, id, size) {
     const f = byId[id];
@@ -80,7 +93,9 @@
     if (!anim()) { set(); return Promise.resolve(); }
     return G.to(img, { y: 40, rotation: -6, scale: .9, opacity: 0, duration: .3, ease: "power2.in" }).then(() => {
       set();
-      G.fromTo(img, { y: -70, rotation: 6, scale: .94, opacity: 0 }, { y: 0, rotation: 0, scale: 1, opacity: 1, duration: .85, ease: "back.out(1.5)", clearProps: "transform,opacity" });
+      return ready(img).then(() => {
+        G.fromTo(img, { y: -70, rotation: 6, scale: .94, opacity: 0 }, { y: 0, rotation: 0, scale: 1, opacity: 1, duration: .85, ease: "back.out(1.5)", clearProps: "transform,opacity" });
+      });
     });
   }
   // warm the cache for the other flavors once the page is idle (not during first paint)
@@ -93,7 +108,7 @@
     const stage = hero.querySelector(".hero__stage"), bag = hero.querySelector(".hero__bag");
     const pills = hero.querySelector(".hero__pills"), far = hero.querySelector(".fruits--far"), near = hero.querySelector(".fruits--near");
     const layer = Layer(stage, { rx: .84, ry: .9, box: () => {
-      const r = stage.getBoundingClientRect(), b = bag.getBoundingClientRect();
+      const r = stage.getBoundingClientRect(), b = rest(bag);
       return { left: b.left - (b.width * .02), top: b.top - b.height * .05, width: b.width * 1.04, height: b.height * 1.1 }; } });
     // fix pieces relative to the stage, not the bag box: convert after placing
     let index = 0, busy = false;
@@ -134,7 +149,7 @@
     }
     // Layer.place writes % of the bag box; re-express in % of the stage
     function fixToStage() {
-      const s = stage.getBoundingClientRect(), b = bag.getBoundingClientRect();
+      const s = stage.getBoundingClientRect(), b = rest(bag);
       const bx = { left: b.left - b.width * .02, top: b.top - b.height * .05, width: b.width * 1.04, height: b.height * 1.1 };
       stage.querySelectorAll(".piece").forEach(el => {
         const px = parseFloat(el.style.left) / 100, py = parseFloat(el.style.top) / 100;
@@ -161,7 +176,7 @@
   if (sabor) {
     const bag = sabor.querySelector("#saborBag"), word = sabor.querySelector("#saborWord"), tabs = sabor.querySelector("#saborTabs");
     const layer = Layer(sabor, { rx: .78, ry: .9, box: () => {
-      const b = bag.getBoundingClientRect(); return { left: b.left, top: b.top - b.height * .08, width: b.width, height: b.height * 1.16 }; } });
+      const b = rest(bag); return { left: b.left, top: b.top - b.height * .08, width: b.width, height: b.height * 1.16 }; } });
     let index = 0, busy = false, shown = false;
     tabs.innerHTML = FLAVORS.map((f, i) => `<button type="button" role="tab" class="prog" aria-selected="${i === 0}" aria-label="${f.name}">${f.name}</button>`).join("");
     function setWord(f, animateIn) {
@@ -179,7 +194,7 @@
       tabs.querySelectorAll(".prog").forEach((t, i) => t.setAttribute("aria-selected", i === index));
     }
     function stageFix() {
-      const s = sabor.getBoundingClientRect(), b = bag.getBoundingClientRect();
+      const s = sabor.getBoundingClientRect(), b = rest(bag);
       const bx = { left: b.left, top: b.top - b.height * .08, width: b.width, height: b.height * 1.16 };
       sabor.querySelectorAll(".fruits .piece").forEach(el => {
         const wrap = el.parentElement.getBoundingClientRect();
@@ -196,7 +211,7 @@
       const glass = sabor.querySelector("#saborGlass");
       const gOut = anim() ? G.to(glass, { y: 40, opacity: 0, rotation: 16, duration: .3, ease: "power2.in" }) : Promise.resolve();
       await Promise.all([layer.implode(), swapBag(bag, f.id), out, gOut]);
-      glass.src = Z.glass(f.id);
+      glass.src = Z.glass(f.id); await ready(glass);
       if (anim()) G.fromTo(glass, { y: 60, opacity: 0, rotation: -8 }, { y: 0, opacity: 1, rotation: 0, duration: .9, delay: .2, ease: "back.out(1.6)", clearProps: "transform,opacity" });
       setWord(f, true); layer.set(f.id); stageFix(); layer.burst(.08);
       setTimeout(() => busy = false, 420);

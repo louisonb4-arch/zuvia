@@ -118,7 +118,20 @@
     $$(".step").forEach(s => ScrollTrigger.create({ trigger: s, containerAnimation: tw, start: "left 75%", onEnter: () => s.classList.add("is-in") }));
   });
   mm.add("(max-width: 899px)", () => {
-    $$(".step").forEach(s => ScrollTrigger.create({ trigger: s, start: "top 70%", onEnter: () => s.classList.add("is-in") }));
+    // swipeable cards: tabs + progress follow the card in view, cards animate when they land
+    const track = document.querySelector(".como__track"), steps = $$(".step"), tabs = $$(".como__tab"), bar = document.querySelector(".como__bar span");
+    const setActive = i => {
+      tabs.forEach((t, k) => t.setAttribute("aria-selected", k === i));
+      bar.style.transform = `translateX(${i * 100}%)`;
+      steps[i].classList.add("is-in");
+    };
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.intersectionRatio > .6) setActive(steps.indexOf(e.target)); }), { root: track, threshold: [.6] });
+    steps.forEach(s => io.observe(s));
+    tabs.forEach((t, i) => t.addEventListener("click", () => track.scrollTo({ left: steps[i].offsetLeft - 20, behavior: "smooth" })));
+    ScrollTrigger.create({ trigger: ".como__track", start: "top 75%", once: true, onEnter: () => setActive(0) });
+    G.from(".step", { x: 60, opacity: 0, duration: .9, stagger: .08, scrollTrigger: { trigger: ".como__track", start: "top 85%" } });
+    G.from(".como__facts li", { y: 24, opacity: 0, duration: .7, stagger: .08, scrollTrigger: { trigger: ".como__facts", start: "top 90%" } });
+    return () => io.disconnect();
   });
 
   /* ---------- band ---------- */

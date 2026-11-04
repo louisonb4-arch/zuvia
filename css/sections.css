@@ -93,7 +93,7 @@
 }
 
 /* ---------- SABOR (Ciao-style flavor page) ---------- */
-.sabor { position: relative; isolation: isolate; overflow: hidden; container-type: size;
+.sabor { position: relative; isolation: isolate; overflow: hidden; container-type: size; touch-action: pan-y;
   height: clamp(680px, 100svh, 940px); background: var(--bg); transition: --hc .7s ease, --ht .7s ease, --hw .7s ease;
   --u: clamp(60px, min(13cqw, 17cqh), 160px); }
 .sabor__bg { position: absolute; inset: 0; z-index: -2; background: radial-gradient(70% 60% at 50% 44%, var(--ht) 0%, color-mix(in srgb, var(--ht) 40%, var(--bg)) 55%, var(--bg) 100%); }
@@ -132,12 +132,17 @@
   .sabor__word { top: 15%; font-size: min(calc(94cqw / (var(--len, 8) * .64)), 15cqh); }
   .sabor__bag { width: min(78cqw, 340px); }
   .sabor__arrow { top: calc(35% - 22px); bottom: auto; width: 44px; height: 44px; }
-  .sabor__glass { left: auto; right: 6%; top: calc(54% - 30px); translate: 0 -100%; height: min(22cqh, 190px); }
+  .sabor__glass { left: auto; right: 5%; top: auto; bottom: calc(46% + 2px); translate: 0 0; height: min(20cqh, 160px); rotate: 8deg; }
+  .sabor__arrow { display: none; }
+  .sabor__bag { translate: -7% 0; }
   .sabor__ui { grid-template-columns: 1fr; grid-template-areas: "info" "buy" "prog"; gap: 14px; padding-bottom: 20px; }
   .sabor__buy { justify-items: start; text-align: left; grid-template-columns: auto 1fr; align-items: center; }
   .sabor__buy .btn { grid-column: 1 / -1; width: 100%; }
   .sabor__desc { font-size: .95rem; }
-  .prog { font-size: 0; gap: 0; }
+  .sabor__progress { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; }
+  .prog { gap: 0; padding: 7px 11px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--paper); font-size: .7rem; }
+  .prog::before { display: none; }
+  .prog[aria-selected="true"] { background: var(--hc); border-color: var(--hc); color: #fff; }
 }
 
 /* ---------- CÓMO FUNCIONA (pinned horizontal on desktop) ---------- */
@@ -179,10 +184,37 @@
 @keyframes pop { from { transform: scale(.4) rotate(-20deg); opacity: 0; } }
 @keyframes drip { from { transform: translateY(-40%) scale(.6); opacity: 0; } }
 @keyframes fill { from { transform: scaleY(0); } }
+.como__tabs, .como__facts { display: none; }
 @media (max-width: 899px) {
-  .como__track { flex-direction: column; padding-inline: 20px; gap: 56px; }
-  .step { flex-basis: auto; max-width: 520px; margin-inline: auto; }
-  .como__bar { display: none; }
+  .como__pin { padding-block: 64px 48px; }
+  .como__head { margin-bottom: 18px; }
+  .como__tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; margin: 0 20px 18px; border-radius: 999px;
+    background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .como__tab { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border: 0; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--ink-2); font: 700 .92rem/1 var(--f-display); transition: background-color .3s ease, color .3s ease; }
+  .como__tab b { font: 700 .7rem/1 var(--f-display); letter-spacing: .08em; color: var(--leaf); }
+  .como__tab[aria-selected="true"] { background: var(--brand); color: var(--paper); }
+  .como__tab[aria-selected="true"] b { color: var(--lime); }
+  .como__track { overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; gap: 12px; padding: 4px 20px 8px;
+    scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+  .como__track::-webkit-scrollbar { display: none; }
+  .step { flex: 0 0 84%; max-width: 420px; scroll-snap-align: start; gap: 0; border-radius: var(--r-lg); overflow: hidden;
+    background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line), 0 20px 40px -30px rgba(30,56,24,.5); }
+  .step__visual { aspect-ratio: auto; height: min(62vw, 300px); background: linear-gradient(180deg, color-mix(in srgb, var(--soft) 60%, var(--paper)), var(--paper)); }
+  .step__disc { height: 84%; }
+  .step__photo { height: 88%; }
+  .step__bag { width: 32%; left: 4%; top: 4%; }
+  .step__badge { padding: 10px 12px; right: 6%; bottom: 10%; }
+  .step__badge strong { font-size: 1.25rem; }
+  .step__copy { padding: 16px 20px 22px; gap: 6px; }
+  .step__title { font-size: 2.3rem; }
+  .step__copy p { font-size: .95rem; }
+  .como__bar { display: block; margin: 14px 20px 0; padding: 0; height: 4px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; }
+  .como__bar span { scale: 1 1; width: 33.34%; transition: transform .45s var(--ease); }
+  .como__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; list-style: none; margin-top: 22px; }
+  .como__facts li { display: grid; gap: 4px; justify-items: center; text-align: center; padding: 14px 6px; border-radius: var(--r-md); background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .como__facts strong { font: 700 1rem/1 var(--f-display); color: var(--brand); white-space: nowrap; }
+  .como__facts span { font-size: .74rem; line-height: 1.25; color: var(--ink-2); }
 }
 
 /* ---------- BUILDER ---------- */
