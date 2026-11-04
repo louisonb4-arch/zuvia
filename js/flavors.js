@@ -32,7 +32,7 @@
         const sl = RIM[i], el = document.createElement("div");
         el.className = "piece piece--" + sl.L;
         el.style.cssText = `--s:${sl.s};--d:${sl.d};--r:${sl.r}deg;--dur:${5.5 + (i % 3) * 1.3}s;--delay:${-i * .8}s`;
-        el.innerHTML = `<img src="${Z.fruit(name)}" alt="" draggable="false" decoding="async">`;
+        el.innerHTML = `<div class="piece__in"><img src="${Z.fruit(name)}" alt="" draggable="false" decoding="async"></div>`;
         place(el, sl);
         (sl.L === "back" ? back : front).appendChild(el);
         return el;
@@ -109,7 +109,7 @@
           const el = document.createElement("div");
           el.className = `piece piece--${cls}`;
           el.style.cssText = `left:${p.x}%;top:${p.y}%;--s:${p.s};--d:${cls === "near" ? 50 : 8};--r:${p.r}deg;--dur:${8 + i * 2}s;--delay:${-i * 2}s`;
-          el.innerHTML = `<img src="${Z.fruit(names[i])}" alt="" draggable="false">`;
+          el.innerHTML = `<div class="piece__in"><img src="${Z.fruit(names[i])}" alt="" draggable="false" decoding="async"></div>`;
           wrap.appendChild(el);
           if (animateIn && anim()) G.from(el, { opacity: 0, scale: .6, y: cls === "near" ? 80 : -40, duration: 1.1, delay: .15 + i * .1, ease: "power3.out", clearProps: "transform,opacity" });
         });
@@ -244,4 +244,7 @@
     e.preventDefault(); Z.sabor && Z.sabor.select(a.dataset.flavorLink);
     const t = document.getElementById("sabores"); Z.scrollTo ? Z.scrollTo(t) : t.scrollIntoView();
   }));
+  /* pause looping ambient motion while a scene is off-screen */
+  const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("is-paused", !e.isIntersecting)), { rootMargin: "80px" });
+  document.querySelectorAll(".hero, .sabor, .manifesto, .band").forEach(el => io.observe(el));
 })();

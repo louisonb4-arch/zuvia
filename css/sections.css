@@ -5,7 +5,7 @@
   height: calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); min-height: 640px; max-height: 1000px;
   background: var(--bg); transition: --hc .7s ease, --ht .7s ease, --hw .7s ease; }
 .hero__blobs { position: absolute; inset: 0; z-index: -2; pointer-events: none; }
-.hero__blobs span { position: absolute; border-radius: 50%; }
+.hero__blobs span { position: absolute; border-radius: 50%; will-change: transform; }
 .hero__blobs span:nth-child(1) { width: 90vmax; height: 90vmax; left: 50%; top: 58%; translate: -50% -50%; background: radial-gradient(closest-side, var(--ht), transparent 72%); }
 .hero__blobs span:nth-child(2) { width: 46vmax; height: 46vmax; left: -12vmax; top: -10vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--leaf) 26%, transparent), transparent 70%); }
 .hero__blobs span:nth-child(3) { width: 40vmax; height: 40vmax; right: -14vmax; bottom: -16vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--hc) 30%, transparent), transparent 70%); }
@@ -77,10 +77,10 @@
 .gama__item:nth-child(3) { --arc: -40px; }
 .gama__btn { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); }
 .gama__btn { position: relative; }
-.gama__glass { position: absolute; z-index: 0; left: 50%; bottom: 52px; height: 66%; width: auto; translate: -50% 0; opacity: 0; transform: translateY(30px) scale(.9); transition: transform .55s var(--spring), opacity .35s ease; pointer-events: none; filter: drop-shadow(0 16px 16px rgba(30,56,24,.2)); }
+.gama__glass { position: absolute; z-index: 0; left: 50%; bottom: 52px; height: 66%; width: auto; translate: -50% 0; opacity: 0; transform: translateY(30px) scale(.9); transition: transform .55s var(--spring), opacity .35s ease; pointer-events: none; filter: drop-shadow(0 16px 16px rgba(30,56,24,.2)); will-change: transform, opacity; }
 .gama__btn:hover .gama__glass, .gama__btn:focus-visible .gama__glass { opacity: 1; transform: translate(50%, -6%) rotate(8deg) scale(1); }
-.gama__img { position: relative; z-index: 1; width: 100%; filter: drop-shadow(0 22px 18px rgba(30,56,24,.22)); transition: transform .5s var(--spring), filter .5s ease; }
-.gama__btn:hover .gama__img, .gama__btn:focus-visible .gama__img { transform: translateY(-22px) rotate(-3deg) scale(1.05); filter: drop-shadow(0 34px 24px rgba(30,56,24,.28)); }
+.gama__img { position: relative; z-index: 1; width: 100%; filter: drop-shadow(0 22px 18px rgba(30,56,24,.22)); transition: transform .5s var(--spring); will-change: transform; }
+.gama__btn:hover .gama__img, .gama__btn:focus-visible .gama__img { transform: translateY(-22px) rotate(-3deg) scale(1.05); }
 .gama__btn .pill { pointer-events: none; }
 .gama__btn:hover .pill { background: var(--pc); color: #fff; }
 .gama__shadow { width: 70%; height: 14px; margin-top: -10px; border-radius: 50%; background: radial-gradient(closest-side, rgba(30,56,24,.18), transparent); transition: transform .5s var(--spring), opacity .5s; }
@@ -333,4 +333,11 @@ a.foot__v:hover { color: var(--lime); translate: 0; }
   .foot__f--1 { top: 3%; width: 84px; } .foot__f--2 { display: none; }
   .foot__legal { flex-direction: column; }
   .foot__word { margin-bottom: 0; }
+}
+
+/* performance: touch devices get flatter, cheaper shadows on looping elements */
+@media (hover: none), (max-width: 760px) {
+  .piece img { filter: drop-shadow(0 8px 8px rgba(30,56,24,.18)); }
+  .piece--back img { filter: none; opacity: .92; }
+  .hero__bag, .sabor__bag { filter: drop-shadow(0 16px 14px rgba(30,56,24,.22)); }
 }

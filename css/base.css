@@ -38,6 +38,9 @@
 [data-flavor="green-mix"] { --hc: var(--l-mix);      --ht: #D8EEDF; --hw: #B5DDC3; }
 
 *, *::before, *::after { box-sizing: border-box; }
+html.lenis, html.lenis body { height: auto; }
+html.lenis { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
 html { scroll-behavior: smooth; scroll-padding-top: 88px; -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.6 var(--f-body); -webkit-font-smoothing: antialiased; overflow-x: clip; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
@@ -96,6 +99,7 @@ button { font: inherit; }
 .top { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50;
   transition: transform .45s var(--ease), background-color .3s ease, box-shadow .3s ease; }
 .top.is-scrolled { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); box-shadow: 0 1px 0 var(--line); }
+@media (hover: none), (max-width: 900px) { .top.is-scrolled { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; } }
 .top.is-hidden { transform: translateY(-110%); }
 .top__in { display: flex; align-items: center; gap: 28px; min-height: 76px; }
 .logo { display: inline-flex; margin-right: auto; }
@@ -123,11 +127,13 @@ button { font: inherit; }
   margin: calc(var(--u, 110px) * var(--s, 1) / -2) 0 0 calc(var(--u, 110px) * var(--s, 1) / -2);
   translate: calc(var(--px, 0) * var(--d, 10) * -1px) calc(var(--py, 0) * var(--d, 10) * -1px);
   transition: translate .9s var(--ease); }
+.piece__in { width: 100%; height: 100%; will-change: transform; }
 .piece img { width: 100%; height: 100%; object-fit: contain; rotate: var(--r, 0deg); filter: drop-shadow(0 14px 16px rgba(30,56,24,.22)); }
 .piece--back img { filter: blur(1.2px) drop-shadow(0 8px 10px rgba(30,56,24,.14)); }
 .piece--far img { filter: blur(5px); opacity: .9; }
 .piece--near img { filter: blur(9px); }
-.bob { width: 100%; display: grid; place-items: center; }
+.bob { width: 100%; display: grid; place-items: center; will-change: transform; }
+.piece { will-change: transform; }
 
 /* pills = the packaging label */
 .pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
@@ -147,7 +153,8 @@ button { font: inherit; }
 
 @media (prefers-reduced-motion: no-preference) {
   .bob { animation: bob 6s ease-in-out infinite; }
-  .piece img { animation: drift var(--dur, 6s) var(--delay, 0s) ease-in-out infinite; }
+  .piece__in { animation: drift var(--dur, 6s) var(--delay, 0s) ease-in-out infinite; }
+  .is-paused .bob, .is-paused .piece__in, .is-paused .hero__blobs span { animation-play-state: paused; }
 }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes drift { 0%, 100% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(0,-12px,0) rotate(7deg); } }
