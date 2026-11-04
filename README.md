@@ -21,3 +21,6 @@ Site vitrine statique (HTML / CSS / JS, sans build) pour la marque Zuvia.
 Vercel, projet statique (Framework Preset: Other, aucune commande de build, output = racine).
 
 Site réalisé par [Vokum](https://vokumagency.com).
+
+## Cache
+Les CSS/JS sont appelés avec `?v=<commit>` dans `index.html` : changer la valeur à chaque mise en ligne (ou garder `max-age=0` du `vercel.json`) pour que les visiteurs reçoivent la nouvelle version.
